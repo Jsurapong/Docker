@@ -1,8 +1,21 @@
-FROM debian:jessie
-# by me
+FROM php:5.6-apache
 
-ENV text "Hello world I'm ENV"
+ENV ENVIRONMENT=production
 
-RUN echo ${text}
+RUN echo "[PHP] \ndate.timezone = Asia/Bangkok" >> /usr/local/etc/php/php.ini
 
-CMD ["echo","hello I'm CMD"]
+
+RUN apt-get -y update \
+    && apt-get install -y --no-install-recommends \
+    libgd-dev \
+    && rm -r /var/lib/apt/lists/*
+
+RUN docker-php-ext-configure gd --with-freetype-dir=/usr/include/ --with-jpeg-dir=/usr/include/
+RUN docker-php-ext-install mysqli gd
+
+RUN a2enmod rewrite
+
+COPY ./index.php /var/www/html/index.php
+VOLUME [ "/var/www/html" ]
+
+EXPOSE 80 443
